@@ -3,6 +3,38 @@ import type { Session, User } from "next-auth";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
+// Function to refresh the access token
+async function refreshAccessToken(token: JWT): Promise<JWT> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        refresh_token: token.refresh_token,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error("Failed to refresh token");
+    }
+
+    return {
+      ...token,
+      access_token: data.data.access_token,
+      // Update the expiry time (assuming 15 minutes from now)
+      accessTokenExpires: Date.now() + 15 * 60 * 1000,
+    };
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
@@ -53,6 +85,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   callbacks: {
     async jwt({ token, user, account }: { token: JWT; user?: User; account?: any }) {
+      // Initial sign in
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -62,17 +95,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.company = user.company;
         token.access_token = user.access_token;
         token.refresh_token = user.refresh_token;
+        // Set token expiry (15 minutes from now - adjust based on your backend config)
+        token.accessTokenExpires = Date.now() + 15 * 60 * 1000;
+        return token;
       }
 
-      if (account) {
-        token.access_token = account.access_token ?? token.access_token;
-        token.refresh_token = account.refresh_token ?? token.refresh_token;
+      // Return previous token if the access token has not expired yet
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token;
       }
 
-      return token;
+      // Access token has expired, try to refresh it
+      console.log("Access token expired, refreshing...");
+      return refreshAccessToken(token);
     },
 
     async session({ session, token }: { session: Session; token: JWT }) {
+      // If there was an error refreshing the token, sign out the user
+      if (token.error) {
+        console.error("Token refresh error, session invalid");
+        return {
+          ...session,
+          error: "RefreshAccessTokenError",
+        } as Session;
+      }
+
       session.user = {
         id: token.id,
         email: token.email,

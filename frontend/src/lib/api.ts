@@ -107,10 +107,11 @@ export const ocrAPI = {
 };
 
 // Client-side versions (for use in client components)
-export const createClientUserAPI = (accessToken: string) => {
-  const api = createClientAPI(accessToken);
+export const createClientUserAPI = (accessToken: string, refreshToken?: string) => {
+  const api = createClientAPI(accessToken, refreshToken);
   return {
     list: () => api<APIResponse<User[]>>("/users"),
+    get: (id: string) => api<APIResponse<User>>(`/users/${id}`),
     create: (data: CreateUserInput) =>
       api<APIResponse<User>>("/users", {
         method: "POST",
@@ -133,8 +134,8 @@ export const createClientUserAPI = (accessToken: string) => {
   };
 };
 
-export const createClientExpenseAPI = (accessToken: string) => {
-  const api = createClientAPI(accessToken);
+export const createClientExpenseAPI = (accessToken: string, refreshToken?: string) => {
+  const api = createClientAPI(accessToken, refreshToken);
   return {
     list: (page = 1, limit = 10) =>
       api<APIResponse<Expense[]>>(`/expenses?page=${page}&limit=${limit}`),
@@ -156,8 +157,8 @@ export const createClientExpenseAPI = (accessToken: string) => {
   };
 };
 
-export const createClientApprovalAPI = (accessToken: string) => {
-  const api = createClientAPI(accessToken);
+export const createClientApprovalAPI = (accessToken: string, refreshToken?: string) => {
+  const api = createClientAPI(accessToken, refreshToken);
   return {
     pending: () => api<APIResponse<Approval[]>>("/approvals/pending"),
     approve: (id: string, data: ApprovalActionInput) =>

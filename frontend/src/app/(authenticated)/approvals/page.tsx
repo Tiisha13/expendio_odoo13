@@ -43,7 +43,7 @@ export default function ApprovalsPage() {
 
     try {
       setLoading(true);
-      const api = createClientApprovalAPI(session.accessToken);
+      const api = createClientApprovalAPI(session.accessToken, session.user?.refresh_token);
       const response = await api.pending();
       setApprovals(response.data || []); // Ensure it's always an array
     } catch (error: any) {
@@ -80,7 +80,7 @@ export default function ApprovalsPage() {
     if (!session?.accessToken || !selectedApproval) return;
 
     try {
-      const api = createClientApprovalAPI(session.accessToken);
+      const api = createClientApprovalAPI(session.accessToken, session.user?.refresh_token);
       const data: ApprovalActionInput = { comments: comment };
 
       if (actionType === "approve") {

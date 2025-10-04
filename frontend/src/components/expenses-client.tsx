@@ -34,8 +34,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Upload, Trash2 } from "lucide-react";
+import { Plus, Upload, Trash2, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export default function ExpensesClient() {
   const { data: session } = useSession();
@@ -60,7 +63,7 @@ export default function ExpensesClient() {
 
     try {
       setLoading(true);
-      const api = createClientExpenseAPI(session.accessToken);
+      const api = createClientExpenseAPI(session.accessToken, session.user?.refresh_token);
       const response = await api.list(1, 100);
       setExpenses(response.data || []); // Ensure it's always an array
     } catch (error: any) {
@@ -84,7 +87,7 @@ export default function ExpensesClient() {
     if (!session?.accessToken) return;
 
     try {
-      const api = createClientExpenseAPI(session.accessToken);
+      const api = createClientExpenseAPI(session.accessToken, session.user?.refresh_token);
       await api.create(formData);
 
       toast({
@@ -116,7 +119,7 @@ export default function ExpensesClient() {
     if (!confirm("Are you sure you want to delete this expense?")) return;
 
     try {
-      const api = createClientExpenseAPI(session.accessToken);
+      const api = createClientExpenseAPI(session.accessToken, session.user?.refresh_token);
       await api.delete(expenseId);
 
       toast({
@@ -235,13 +238,14 @@ export default function ExpensesClient() {
                         id="amount"
                         type="number"
                         step="0.01"
-                        value={formData.amount}
-                        onChange={(e) =>
+                        value={formData.amount || ""}
+                        onChange={(e) => {
+                          const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
                           setFormData({
                             ...formData,
-                            amount: parseFloat(e.target.value),
-                          })
-                        }
+                            amount: isNaN(value) ? 0 : value,
+                          });
+                        }}
                         required
                       />
                     </div>
@@ -280,18 +284,37 @@ export default function ExpensesClient() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="date">Date</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={formData.expense_date}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          expense_date: e.target.value,
-                        })
-                      }
-                      required
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.expense_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.expense_date
+                            ? format(new Date(formData.expense_date), "PPP")
+                            : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={
+                            formData.expense_date ? new Date(formData.expense_date) : undefined
+                          }
+                          onSelect={(date) =>
+                            setFormData({
+                              ...formData,
+                              expense_date: date ? date.toISOString().split("T")[0] : "",
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>

@@ -55,7 +55,7 @@ export default function Page() {
 
     try {
       setLoading(true);
-      const api = createClientUserAPI(session.accessToken);
+      const api = createClientUserAPI(session.accessToken, session.user?.refresh_token);
       const response = await api.list();
       setUsers(response.data || []); // Ensure it's always an array
     } catch (error: any) {
@@ -79,7 +79,7 @@ export default function Page() {
     if (!session?.accessToken) return;
 
     try {
-      const api = createClientUserAPI(session.accessToken);
+      const api = createClientUserAPI(session.accessToken, session.user?.refresh_token);
       await api.create(formData);
 
       toast({
@@ -109,7 +109,7 @@ export default function Page() {
     if (!session?.accessToken) return;
 
     try {
-      const api = createClientUserAPI(session.accessToken);
+      const api = createClientUserAPI(session.accessToken, session.user?.refresh_token);
       await api.updateRole(userId, { role } as UpdateUserRoleInput);
 
       toast({
@@ -131,7 +131,7 @@ export default function Page() {
     if (!session?.accessToken) return;
 
     try {
-      const api = createClientUserAPI(session.accessToken);
+      const api = createClientUserAPI(session.accessToken, session.user?.refresh_token);
       await api.assignManager(userId, {
         manager_id: managerId,
       } as AssignManagerInput);
@@ -156,7 +156,7 @@ export default function Page() {
     if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      const api = createClientUserAPI(session.accessToken);
+      const api = createClientUserAPI(session.accessToken, session.user?.refresh_token);
       await api.delete(userId);
 
       toast({
