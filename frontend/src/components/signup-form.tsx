@@ -20,7 +20,7 @@ export function SignupForm({
       <form>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
-            <a
+            <Link
               href="#"
               className="flex flex-col items-center gap-2 font-medium"
             >
@@ -28,10 +28,10 @@ export function SignupForm({
                 <GalleryVerticalEnd className="size-6" />
               </div>
               <span className="sr-only">Expensio.</span>
-            </a>
+            </Link>
             <h1 className="text-xl font-bold">Welcome to Expensio.</h1>
             <FieldDescription>
-              You have an account? <Link href="/login">Sign in</Link>
+              Already have an account? <Link href="/login">Sign in</Link>
             </FieldDescription>
           </div>
           <Field>
