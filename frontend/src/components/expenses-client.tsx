@@ -88,7 +88,16 @@ export default function ExpensesClient() {
 
     try {
       const api = createClientExpenseAPI(session.accessToken, session.user?.refresh_token);
-      await api.create(formData);
+
+      // Convert date string to ISO 8601 format with time for backend
+      const expenseData = {
+        ...formData,
+        expense_date: formData.expense_date
+          ? new Date(formData.expense_date + "T00:00:00").toISOString()
+          : new Date().toISOString(),
+      };
+
+      await api.create(expenseData);
 
       toast({
         title: "Success",
@@ -287,9 +296,8 @@ export default function ExpensesClient() {
                         <SelectItem value="meals">Meals</SelectItem>
                         <SelectItem value="travel">Travel</SelectItem>
                         <SelectItem value="accommodation">Accommodation</SelectItem>
-                        <SelectItem value="entertainment">Entertainment</SelectItem>
-                        <SelectItem value="office_supplies">Office Supplies</SelectItem>
-                        <SelectItem value="software">Software</SelectItem>
+                        <SelectItem value="transport">Transport</SelectItem>
+                        <SelectItem value="supplies">Supplies</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
@@ -307,7 +315,7 @@ export default function ExpensesClient() {
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {formData.expense_date
-                            ? format(new Date(formData.expense_date), "PPP")
+                            ? format(new Date(formData.expense_date + "T00:00:00"), "PPP")
                             : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
@@ -315,14 +323,26 @@ export default function ExpensesClient() {
                         <Calendar
                           mode="single"
                           selected={
-                            formData.expense_date ? new Date(formData.expense_date) : undefined
+                            formData.expense_date
+                              ? new Date(formData.expense_date + "T00:00:00")
+                              : undefined
                           }
-                          onSelect={(date) =>
-                            setFormData({
-                              ...formData,
-                              expense_date: date ? date.toISOString().split("T")[0] : "",
-                            })
-                          }
+                          onSelect={(date) => {
+                            if (date) {
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, "0");
+                              const day = String(date.getDate()).padStart(2, "0");
+                              setFormData({
+                                ...formData,
+                                expense_date: `${year}-${month}-${day}`,
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                expense_date: "",
+                              });
+                            }
+                          }}
                           initialFocus
                         />
                       </PopoverContent>

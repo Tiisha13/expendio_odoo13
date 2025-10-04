@@ -46,9 +46,8 @@ export type ExpenseCategory =
   | "meals"
   | "travel"
   | "accommodation"
-  | "entertainment"
-  | "office_supplies"
-  | "software"
+  | "transport"
+  | "supplies"
   | "other";
 
 export interface Expense {
