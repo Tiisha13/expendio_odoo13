@@ -1,12 +1,7 @@
-import { Button } from "@/components/ui/button";
-import React from "react";
+import { redirect } from "next/navigation";
 
 const Page = () => {
-  return (
-    <div>
-      <Button>Hi</Button>
-    </div>
-  );
+  return redirect("/dashboard");
 };
 
 export default Page;
