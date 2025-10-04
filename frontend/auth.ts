@@ -20,13 +20,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         );
 
-        if (!res.ok) throw new Error("Invalid credentials");
+        if (!res.ok) {
+          throw new Error("Login failed");
+        }
 
         const data = await res.json();
 
         if (!data.success) {
           throw new Error(data.message || "Login failed");
         }
+
+        // Backend returns user and company as separate objects
         return {
           id: data.data.user.id,
           email: data.data.user.email,
@@ -34,9 +38,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           last_name: data.data.user.last_name,
           role: data.data.user.role,
           company: {
-            id: data.data.user.company.id,
-            name: data.data.user.company.name,
-            country: data.data.user.company.country,
+            id: data.data.company.id,
+            name: data.data.company.name,
+            country: data.data.company.country,
+            base_currency: data.data.company.base_currency,
           },
           access_token: data.data.access_token,
           refresh_token: data.data.refresh_token,

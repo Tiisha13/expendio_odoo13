@@ -25,8 +25,13 @@ import {
 } from "@/components/ui/sidebar";
 import { NavBar } from "./navbar";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { Fragment } from "react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+  if (!session) return <Fragment></Fragment>;
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -38,7 +43,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
+                  <span className="truncate font-medium">
+                    {session.user.company.name}
+                  </span>
                   <span className="truncate text-xs">Enterprise</span>
                 </div>
               </Link>

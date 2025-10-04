@@ -25,14 +25,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Fragment } from "react";
+import { signOut, useSession } from "next-auth/react";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
+  const { data: session } = useSession();
 
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-  };
+  if (!session) return <Fragment></Fragment>;
 
   return (
     <SidebarMenu>
@@ -44,11 +44,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {session.user.first_name.charAt(0).toUpperCase()}
+                  {session.user.last_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">
+                  {session.user.first_name} {session.user.last_name}
+                </span>
+                <span className="truncate text-xs">{session.user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -62,16 +67,23 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {session.user.first_name.charAt(0).toUpperCase()}
+                    {session.user.last_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">
+                    {session.user.first_name} {session.user.last_name}
+                  </span>
+                  <span className="truncate text-xs">{session.user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>

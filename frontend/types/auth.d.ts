@@ -12,6 +12,7 @@ declare module "next-auth" {
       id: string;
       name: string;
       country: string;
+      base_currency: string;
     };
     access_token: string;
     refresh_token: string;
@@ -33,6 +34,7 @@ declare module "next-auth/jwt" {
       id: string;
       name: string;
       country: string;
+      base_currency: string;
     };
     access_token: string;
     refresh_token: string;
