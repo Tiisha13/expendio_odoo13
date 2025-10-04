@@ -92,24 +92,17 @@ export const approvalAPI = {
 
 // OCR API
 export const ocrAPI = {
-  upload: async (
-    file: File,
-    createExpense: boolean = false,
-    accessToken: string
-  ) => {
+  upload: async (file: File, createExpense: boolean = false, accessToken: string) => {
     const formData = new FormData();
     formData.append("receipt", file);
     formData.append("create_expense", createExpense.toString());
 
     const api = createClientAPI(accessToken);
-    return api<APIResponse<OCRResult & { expense_id?: string }>>(
-      "/ocr/upload",
-      {
-        method: "POST",
-        headers: {} as any, // Remove Content-Type to let browser set it with boundary
-        body: formData as any,
-      }
-    );
+    return api<APIResponse<OCRResult & { expense_id?: string }>>("/ocr/upload", {
+      method: "POST",
+      headers: {} as any, // Remove Content-Type to let browser set it with boundary
+      body: formData as any,
+    });
   },
 };
 

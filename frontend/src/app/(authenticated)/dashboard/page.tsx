@@ -38,9 +38,7 @@ export default async function Page() {
   return (
     <div className="space-y-6 p-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user.first_name}!
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user.first_name}!</h1>
         <p className="text-muted-foreground">
           {company.name} • {user.role}
         </p>
@@ -49,53 +47,47 @@ export default async function Page() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Expenses
-            </CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+            <Receipt className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">All time expenses</p>
+            <p className="text-muted-foreground text-xs">All time expenses</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {stats.totalAmount.toFixed(2)} {company.base_currency}
             </div>
-            <p className="text-xs text-muted-foreground">
-              In {company.base_currency}
-            </p>
+            <p className="text-muted-foreground text-xs">In {company.base_currency}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pending}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+            <p className="text-muted-foreground text-xs">Awaiting approval</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.approved}</div>
-            <p className="text-xs text-muted-foreground">
-              Successfully approved
-            </p>
+            <p className="text-muted-foreground text-xs">Successfully approved</p>
           </CardContent>
         </Card>
       </div>
@@ -108,37 +100,31 @@ export default async function Page() {
           {user.role !== "employee" && (
             <a
               href="/users"
-              className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
+              className="hover:bg-accent flex flex-col items-center justify-center rounded-lg border p-6 transition-colors"
             >
               <div className="text-2xl font-semibold">👥</div>
               <div className="mt-2 font-medium">Manage Users</div>
-              <div className="text-sm text-muted-foreground">
-                View and manage team
-              </div>
+              <div className="text-muted-foreground text-sm">View and manage team</div>
             </a>
           )}
 
           <a
             href="/expenses"
-            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
+            className="hover:bg-accent flex flex-col items-center justify-center rounded-lg border p-6 transition-colors"
           >
             <div className="text-2xl font-semibold">💰</div>
             <div className="mt-2 font-medium">My Expenses</div>
-            <div className="text-sm text-muted-foreground">
-              View and create expenses
-            </div>
+            <div className="text-muted-foreground text-sm">View and create expenses</div>
           </a>
 
           {(user.role === "manager" || user.role === "admin") && (
             <a
               href="/approvals"
-              className="flex flex-col items-center justify-between p-6 border rounded-lg hover:bg-accent transition-colors"
+              className="hover:bg-accent flex flex-col items-center justify-between rounded-lg border p-6 transition-colors"
             >
               <div className="text-2xl font-semibold">✅</div>
               <div className="mt-2 font-medium">Approvals</div>
-              <div className="text-sm text-muted-foreground">
-                Review pending expenses
-              </div>
+              <div className="text-muted-foreground text-sm">Review pending expenses</div>
             </a>
           )}
         </CardContent>

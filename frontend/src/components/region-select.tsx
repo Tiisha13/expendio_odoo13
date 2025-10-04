@@ -49,9 +49,7 @@ function RegionSelect({
     );
 
     if (regions) {
-      setRegions(
-        filterRegions(regions.regions, priorityOptions, whitelist, blacklist)
-      );
+      setRegions(filterRegions(regions.regions, priorityOptions, whitelist, blacklist));
     }
   }, [countryCode]);
 

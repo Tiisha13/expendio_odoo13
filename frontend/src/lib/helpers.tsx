@@ -31,17 +31,14 @@ export const filterCountries = (
   if (priorityCountries.length > 0) {
     // ensure the countries are added in the order in which they are specified by the user
     priorityCountries.forEach((slug) => {
-      const result = filteredCountries.find(
-        ({ countryShortCode }) => countryShortCode === slug
-      );
+      const result = filteredCountries.find(({ countryShortCode }) => countryShortCode === slug);
       if (result) {
         countriesListedFirst.push(result);
       }
     });
 
     filteredCountries = filteredCountries.filter(
-      ({ countryShortCode }) =>
-        priorityCountries.indexOf(countryShortCode) === -1
+      ({ countryShortCode }) => priorityCountries.indexOf(countryShortCode) === -1
     );
   }
 
@@ -60,21 +57,15 @@ export const filterRegions = (
   let filteredRegions = regions;
 
   if (whitelist.length > 0) {
-    filteredRegions = regions.filter(
-      ({ shortCode }) => whitelist.indexOf(shortCode) > -1
-    );
+    filteredRegions = regions.filter(({ shortCode }) => whitelist.indexOf(shortCode) > -1);
   } else if (blacklist.length > 0) {
-    filteredRegions = regions.filter(
-      ({ shortCode }) => blacklist.indexOf(shortCode) === -1
-    );
+    filteredRegions = regions.filter(({ shortCode }) => blacklist.indexOf(shortCode) === -1);
   }
 
   if (priorityRegions.length > 0) {
     // ensure the Regions are added in the order in which they are specified by the user
     priorityRegions.forEach((slug) => {
-      const result = filteredRegions.find(
-        ({ shortCode }) => shortCode === slug
-      );
+      const result = filteredRegions.find(({ shortCode }) => shortCode === slug);
       if (result) {
         regionsListedFirst.push(result);
       }
@@ -85,7 +76,5 @@ export const filterRegions = (
     );
   }
 
-  return regionsListedFirst.length
-    ? [...regionsListedFirst, ...filteredRegions]
-    : filteredRegions;
+  return regionsListedFirst.length ? [...regionsListedFirst, ...filteredRegions] : filteredRegions;
 };

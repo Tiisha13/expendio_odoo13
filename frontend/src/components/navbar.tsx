@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  PieChart,
-  User,
-  CheckCircle,
-  LayoutDashboard,
-  type LucideIcon,
-} from "lucide-react";
+import { PieChart, User, CheckCircle, LayoutDashboard, type LucideIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import {

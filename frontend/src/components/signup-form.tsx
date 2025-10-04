@@ -2,12 +2,7 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { ComponentProps, FormEvent, useState } from "react";
@@ -70,22 +65,17 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
     }
 
     try {
-      const response = await fetch(
-        process.env.NEXT_PUBLIC_API_URL + "/auth/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (response.status !== 201) {
         const errorData = await response.json();
-        toast.error(
-          errorData.message || "Something went wrong. Please try again."
-        );
+        toast.error(errorData.message || "Something went wrong. Please try again.");
         return;
       }
     } catch (error) {
@@ -112,10 +102,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
       <form onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
-            <Link
-              href="/"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
+            <Link href="/" className="flex flex-col items-center gap-2 font-medium">
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
@@ -134,9 +121,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
                 type="text"
                 required
                 placeholder="John"
-                onChange={(e) =>
-                  setFormData({ ...formData, first_name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
               />
             </Field>
             <Field>
@@ -146,9 +131,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
                 type="text"
                 required
                 placeholder="Doe"
-                onChange={(e) =>
-                  setFormData({ ...formData, last_name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
               />
             </Field>
           </div>
@@ -159,9 +142,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
               type="email"
               placeholder="m@example.com"
               required
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </Field>
           <Field>
@@ -179,9 +160,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
               type="text"
               required
               placeholder="Your Company"
-              onChange={(e) =>
-                setFormData({ ...formData, company_name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
             />
           </Field>
           <Field>
@@ -191,9 +170,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
               type="password"
               required
               placeholder="••••••••"
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </Field>
           <Field>
@@ -203,9 +180,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
               type="password"
               required
               placeholder="••••••••"
-              onChange={(e) =>
-                setFormData({ ...formData, confirm_password: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
             />
           </Field>
           <Field>
@@ -214,8 +189,7 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
         </FieldGroup>
       </form>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our{" "}
-        <Link href="/">Terms of Service</Link> and{" "}
+        By clicking continue, you agree to our <Link href="/">Terms of Service</Link> and{" "}
         <Link href="/">Privacy Policy</Link>.
       </FieldDescription>
     </div>

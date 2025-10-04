@@ -34,9 +34,7 @@ export default function ApprovalsPage() {
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
-  const [selectedApproval, setSelectedApproval] = useState<Approval | null>(
-    null
-  );
+  const [selectedApproval, setSelectedApproval] = useState<Approval | null>(null);
   const [actionType, setActionType] = useState<"approve" | "reject">("approve");
   const [comment, setComment] = useState("");
 
@@ -93,9 +91,7 @@ export default function ApprovalsPage() {
 
       toast({
         title: "Success",
-        description: `Expense ${
-          actionType === "approve" ? "approved" : "rejected"
-        } successfully`,
+        description: `Expense ${actionType === "approve" ? "approved" : "rejected"} successfully`,
       });
 
       setActionDialogOpen(false);
@@ -119,12 +115,8 @@ export default function ApprovalsPage() {
     <div className="space-y-6 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Pending Approvals
-          </h1>
-          <p className="text-muted-foreground">
-            Review and approve expense requests
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">Pending Approvals</h1>
+          <p className="text-muted-foreground">Review and approve expense requests</p>
         </div>
       </div>
 
@@ -144,10 +136,7 @@ export default function ApprovalsPage() {
           <TableBody>
             {!approvals || approvals.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center text-muted-foreground"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground text-center">
                   No pending approvals
                 </TableCell>
               </TableRow>
@@ -155,44 +144,29 @@ export default function ApprovalsPage() {
               approvals.map((approval) => (
                 <TableRow key={approval.id}>
                   <TableCell className="font-medium">
-                    {approval.expense?.user?.first_name}{" "}
-                    {approval.expense?.user?.last_name}
+                    {approval.expense?.user?.first_name} {approval.expense?.user?.last_name}
                   </TableCell>
                   <TableCell>
                     {approval.expense?.expense_date &&
-                      format(
-                        new Date(approval.expense.expense_date),
-                        "MMM d, yyyy"
-                      )}
+                      format(new Date(approval.expense.expense_date), "MMM d, yyyy")}
                   </TableCell>
-                  <TableCell className="capitalize">
-                    {approval.expense?.category}
-                  </TableCell>
+                  <TableCell className="capitalize">{approval.expense?.category}</TableCell>
                   <TableCell className="max-w-xs truncate">
                     {approval.expense?.description}
                   </TableCell>
                   <TableCell>
-                    {approval.expense?.amount.toFixed(2)}{" "}
-                    {approval.expense?.currency}
+                    {approval.expense?.amount.toFixed(2)} {approval.expense?.currency}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{approval.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleApprove(approval)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleApprove(approval)}>
                         <CheckCircle className="mr-2 h-4 w-4" />
                         Approve
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleReject(approval)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleReject(approval)}>
                         <XCircle className="mr-2 h-4 w-4" />
                         Reject
                       </Button>
@@ -208,25 +182,20 @@ export default function ApprovalsPage() {
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {actionType === "approve" ? "Approve" : "Reject"} Expense
-            </DialogTitle>
+            <DialogTitle>{actionType === "approve" ? "Approve" : "Reject"} Expense</DialogTitle>
             <DialogDescription>
               {selectedApproval && selectedApproval.expense && (
                 <div className="mt-2 space-y-2">
                   <p>
-                    <strong>Employee:</strong>{" "}
-                    {selectedApproval.expense.user?.first_name}{" "}
+                    <strong>Employee:</strong> {selectedApproval.expense.user?.first_name}{" "}
                     {selectedApproval.expense.user?.last_name}
                   </p>
                   <p>
-                    <strong>Amount:</strong>{" "}
-                    {selectedApproval.expense.amount.toFixed(2)}{" "}
+                    <strong>Amount:</strong> {selectedApproval.expense.amount.toFixed(2)}{" "}
                     {selectedApproval.expense.currency}
                   </p>
                   <p>
-                    <strong>Description:</strong>{" "}
-                    {selectedApproval.expense.description}
+                    <strong>Description:</strong> {selectedApproval.expense.description}
                   </p>
                 </div>
               )}
@@ -245,10 +214,7 @@ export default function ApprovalsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setActionDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setActionDialogOpen(false)}>
               Cancel
             </Button>
             <Button

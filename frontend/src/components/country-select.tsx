@@ -41,9 +41,7 @@ function CountrySelect({
   const [countries, setCountries] = useState<CountryRegion[]>([]);
 
   useEffect(() => {
-    setCountries(
-      filterCountries(countryRegionData, priorityOptions, whitelist, blacklist)
-    );
+    setCountries(filterCountries(countryRegionData, priorityOptions, whitelist, blacklist));
   }, []);
 
   return (

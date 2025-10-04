@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import {
-  User,
-  CreateUserInput,
-  UpdateUserRoleInput,
-  AssignManagerInput,
-} from "@/types/api";
+import { User, CreateUserInput, UpdateUserRoleInput, AssignManagerInput } from "@/types/api";
 import { createClientUserAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -179,9 +174,7 @@ export default function Page() {
     }
   };
 
-  const managers = users.filter(
-    (u) => u.role === "manager" || u.role === "admin"
-  );
+  const managers = users.filter((u) => u.role === "manager" || u.role === "admin");
 
   if (loading) {
     return <div className="p-4">Loading...</div>;
@@ -192,9 +185,7 @@ export default function Page() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-          <p className="text-muted-foreground">
-            Manage your team members and their roles
-          </p>
+          <p className="text-muted-foreground">Manage your team members and their roles</p>
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -207,9 +198,7 @@ export default function Page() {
             <form onSubmit={handleCreateUser}>
               <DialogHeader>
                 <DialogTitle>Create New User</DialogTitle>
-                <DialogDescription>
-                  Add a new team member to your organization
-                </DialogDescription>
+                <DialogDescription>Add a new team member to your organization</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -218,9 +207,7 @@ export default function Page() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                   />
                 </div>
@@ -230,9 +217,7 @@ export default function Page() {
                     id="password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
                   />
                 </div>
@@ -241,9 +226,7 @@ export default function Page() {
                   <Input
                     id="first_name"
                     value={formData.first_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, first_name: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                     required
                   />
                 </div>
@@ -252,9 +235,7 @@ export default function Page() {
                   <Input
                     id="last_name"
                     value={formData.last_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, last_name: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                     required
                   />
                 </div>
@@ -262,9 +243,7 @@ export default function Page() {
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, role: value as any })
-                    }
+                    onValueChange={(value) => setFormData({ ...formData, role: value as any })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -322,9 +301,7 @@ export default function Page() {
                   {user.role === "employee" && (
                     <Select
                       value={user.manager_id || ""}
-                      onValueChange={(value) =>
-                        handleAssignManager(user.id, value)
-                      }
+                      onValueChange={(value) => handleAssignManager(user.id, value)}
                     >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Assign manager" />
@@ -340,11 +317,7 @@ export default function Page() {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user.id)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(user.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>

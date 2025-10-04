@@ -162,10 +162,7 @@ export default function ExpensesClient() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<
-      string,
-      "default" | "secondary" | "destructive" | "outline"
-    > = {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       pending: "secondary",
       approved: "default",
       rejected: "destructive",
@@ -210,9 +207,7 @@ export default function ExpensesClient() {
                     disabled={ocrLoading}
                   />
                   {ocrLoading && (
-                    <p className="text-sm text-muted-foreground">
-                      Processing receipt...
-                    </p>
+                    <p className="text-muted-foreground text-sm">Processing receipt...</p>
                   )}
                 </div>
               </div>
@@ -230,9 +225,7 @@ export default function ExpensesClient() {
               <form onSubmit={handleCreateExpense}>
                 <DialogHeader>
                   <DialogTitle>Create New Expense</DialogTitle>
-                  <DialogDescription>
-                    Add a new expense to your records
-                  </DialogDescription>
+                  <DialogDescription>Add a new expense to your records</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -257,9 +250,7 @@ export default function ExpensesClient() {
                       <Input
                         id="currency"
                         value={formData.currency}
-                        onChange={(e) =>
-                          setFormData({ ...formData, currency: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                         placeholder="USD"
                         required
                       />
@@ -279,15 +270,9 @@ export default function ExpensesClient() {
                       <SelectContent>
                         <SelectItem value="meals">Meals</SelectItem>
                         <SelectItem value="travel">Travel</SelectItem>
-                        <SelectItem value="accommodation">
-                          Accommodation
-                        </SelectItem>
-                        <SelectItem value="entertainment">
-                          Entertainment
-                        </SelectItem>
-                        <SelectItem value="office_supplies">
-                          Office Supplies
-                        </SelectItem>
+                        <SelectItem value="accommodation">Accommodation</SelectItem>
+                        <SelectItem value="entertainment">Entertainment</SelectItem>
+                        <SelectItem value="office_supplies">Office Supplies</SelectItem>
                         <SelectItem value="software">Software</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
@@ -361,25 +346,16 @@ export default function ExpensesClient() {
           <TableBody>
             {expenses.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center text-muted-foreground"
-                >
+                <TableCell colSpan={6} className="text-muted-foreground text-center">
                   No expenses found. Create your first expense!
                 </TableCell>
               </TableRow>
             ) : (
               expenses.map((expense) => (
                 <TableRow key={expense.id}>
-                  <TableCell>
-                    {format(new Date(expense.expense_date), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell className="capitalize">
-                    {expense.category}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {expense.description}
-                  </TableCell>
+                  <TableCell>{format(new Date(expense.expense_date), "MMM d, yyyy")}</TableCell>
+                  <TableCell className="capitalize">{expense.category}</TableCell>
+                  <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
                   <TableCell>
                     {expense.amount.toFixed(2)} {expense.currency}
                   </TableCell>

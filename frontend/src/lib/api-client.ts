@@ -3,7 +3,11 @@ import { auth } from "@/auth";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export class APIError extends Error {
-  constructor(public status: number, message: string, public data?: any) {
+  constructor(
+    public status: number,
+    message: string,
+    public data?: any
+  ) {
     super(message);
     this.name = "APIError";
   }
@@ -19,10 +23,7 @@ async function getAuthHeader() {
   };
 }
 
-export async function apiClient<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_URL}${endpoint}`;
 
   const headers: HeadersInit = {
@@ -49,11 +50,7 @@ export async function apiClient<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new APIError(
-      response.status,
-      data.error || data.message || "Request failed",
-      data
-    );
+    throw new APIError(response.status, data.error || data.message || "Request failed", data);
   }
 
   return data;
@@ -85,11 +82,7 @@ export function createClientAPI(accessToken: string) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new APIError(
-        response.status,
-        data.error || data.message || "Request failed",
-        data
-      );
+      throw new APIError(response.status, data.error || data.message || "Request failed", data);
     }
 
     return data;
