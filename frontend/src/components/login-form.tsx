@@ -17,13 +17,32 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { ComponentProps, FormEvent, useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function LoginForm({ className, ...props }: ComponentProps<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false, // prevent auto redirect
+    });
+
+    if (result?.error) {
+      toast.error("Invalid credentials, please try again.");
+      return;
+    }
+
+    toast.success("Login successful!");
+    // Redirect on success
+    router.push("/dashboard");
   };
 
   return (

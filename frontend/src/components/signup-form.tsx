@@ -13,6 +13,7 @@ import Link from "next/link";
 import { ComponentProps, FormEvent, useState } from "react";
 import CountrySelect from "./country-select";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type SignupFormData = {
   first_name: string;
@@ -34,6 +35,8 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
     confirm_password: "",
     country: "",
   });
+
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,13 +70,16 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
     }
 
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_API_URL + "/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (response.status !== 201) {
         const errorData = await response.json();
@@ -90,15 +96,15 @@ export function SignupForm({ className, ...props }: ComponentProps<"div">) {
     toast.success("Signup successful! Please check your email to verify.", {
       action: {
         label: "Login",
-        onClick: () => {
-          window.location.href = "/login";
-        },
+        onClick: goToLogin,
       },
     });
 
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 5000);
+    setTimeout(goToLogin, 5000);
+  };
+
+  const goToLogin = () => {
+    router.push("/login");
   };
 
   return (
