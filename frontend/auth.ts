@@ -6,6 +6,8 @@ import Credentials from "next-auth/providers/credentials";
 // Function to refresh the access token
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
+    console.log("🔄 Attempting to refresh access token...");
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -15,19 +17,26 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     });
 
     const data = await response.json();
+    console.log("🔍 Refresh response:", {
+      success: data.success,
+      hasAccessToken: !!data.data?.access_token,
+    });
 
     if (!response.ok || !data.success) {
-      throw new Error("Failed to refresh token");
+      console.error("❌ Refresh failed:", data.error || "Unknown error");
+      throw new Error(data.error || "Failed to refresh token");
     }
+
+    console.log("✅ Token refreshed successfully");
 
     return {
       ...token,
       access_token: data.data.access_token,
-      // Update the expiry time (assuming 15 minutes from now)
+      // Update the expiry time (15 minutes from now)
       accessTokenExpires: Date.now() + 15 * 60 * 1000,
     };
   } catch (error) {
-    console.error("Error refreshing access token:", error);
+    console.error("❌ Error refreshing access token:", error);
     return {
       ...token,
       error: "RefreshAccessTokenError",
