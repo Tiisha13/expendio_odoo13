@@ -12,10 +12,11 @@ import (
 )
 
 type ExpenseService struct {
-	expenseRepo domain.ExpenseRepository
-	userRepo    domain.UserRepository
-	companyRepo domain.CompanyRepository
-	cfg         *config.Config
+	expenseRepo     domain.ExpenseRepository
+	userRepo        domain.UserRepository
+	companyRepo     domain.CompanyRepository
+	approvalService *ApprovalService
+	cfg             *config.Config
 }
 
 // NewExpenseService creates a new expense service
@@ -31,6 +32,11 @@ func NewExpenseService(
 		companyRepo: companyRepo,
 		cfg:         cfg,
 	}
+}
+
+// SetApprovalService sets the approval service (to avoid circular dependency)
+func (s *ExpenseService) SetApprovalService(approvalService *ApprovalService) {
+	s.approvalService = approvalService
 }
 
 type CreateExpenseRequest struct {
@@ -87,6 +93,21 @@ func (s *ExpenseService) CreateExpense(ctx context.Context, userID string, req *
 
 	if err := s.expenseRepo.Create(ctx, expense); err != nil {
 		return nil, fmt.Errorf("failed to create expense: %w", err)
+	}
+
+	fmt.Printf("💰 Expense created: %s (Status: %s)\n", expense.ID.Hex(), expense.Status)
+
+	// Initialize approval workflow
+	if s.approvalService != nil {
+		fmt.Printf("🔄 Approval service available, initializing approvals...\n")
+		if err := s.approvalService.InitializeApprovals(ctx, expense); err != nil {
+			// Log error but don't fail expense creation
+			fmt.Printf("⚠️  Warning: Failed to initialize approvals for expense %s: %v\n", expense.ID.Hex(), err)
+		}
+	} else {
+		fmt.Printf("❌ CRITICAL: Approval service is NULL! Approvals will NOT be created!\n")
+		fmt.Printf("   This means SetApprovalService was never called in routes.go\n")
+		fmt.Printf("   Backend needs to be restarted!\n")
 	}
 
 	// Invalidate relevant caches

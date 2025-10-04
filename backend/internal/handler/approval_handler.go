@@ -27,7 +27,7 @@ func NewApprovalHandler(approvalService *service.ApprovalService, cfg *config.Co
 func (h *ApprovalHandler) GetPendingApprovals(c *fiber.Ctx) error {
 	approverID := c.Locals("userID").(string)
 
-	approvals, err := h.approvalService.GetPendingApprovals(c.Context(), approverID)
+	approvals, err := h.approvalService.GetPendingApprovalsWithDetails(c.Context(), approverID)
 	if err != nil {
 		return response.InternalServerError(c, "Failed to fetch pending approvals")
 	}

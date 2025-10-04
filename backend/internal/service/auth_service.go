@@ -220,23 +220,38 @@ func (s *AuthService) Logout(ctx context.Context, userID, tokenID string) error 
 
 // RefreshToken generates new access token using refresh token
 func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
+	fmt.Printf("🔄 RefreshToken called\n")
+
 	// Validate refresh token
 	claims, err := jwtUtil.ValidateToken(refreshToken, s.cfg)
 	if err != nil {
+		fmt.Printf("❌ Invalid refresh token: %v\n", err)
 		return "", fmt.Errorf("invalid refresh token: %w", err)
 	}
 
+	fmt.Printf("✅ Refresh token validated - UserID: %s, Email: %s\n", claims.UserID, claims.Email)
+
 	// Check if token type is refresh
 	if claims.TokenType != "refresh" {
+		fmt.Printf("❌ Invalid token type: %s (expected: refresh)\n", claims.TokenType)
 		return "", fmt.Errorf("invalid token type")
 	}
 
 	// Check if session exists
 	sessionKey := "session:" + claims.UserID
-	exists, _ := cache.Exists(sessionKey)
+	fmt.Printf("🔍 Checking session existence: %s\n", sessionKey)
+
+	exists, err := cache.Exists(sessionKey)
+	if err != nil {
+		fmt.Printf("⚠️  Error checking session: %v\n", err)
+	}
+
 	if !exists {
+		fmt.Printf("❌ Session expired or not found for key: %s\n", sessionKey)
 		return "", fmt.Errorf("session expired")
 	}
+
+	fmt.Printf("✅ Session found, generating new access token\n")
 
 	// Generate new access token
 	accessToken, err := jwtUtil.GenerateAccessToken(
@@ -247,8 +262,10 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 		s.cfg,
 	)
 	if err != nil {
+		fmt.Printf("❌ Failed to generate access token: %v\n", err)
 		return "", fmt.Errorf("failed to generate access token: %w", err)
 	}
 
+	fmt.Printf("✅ New access token generated successfully\n")
 	return accessToken, nil
 }

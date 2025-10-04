@@ -36,11 +36,8 @@ export default function ApprovalsPage() {
       setLoading(true);
       const api = createClientApprovalAPI(session.accessToken, session.user?.refresh_token);
       const response = await api.pending();
-      console.log("Approvals response:", response);
-      console.log("Approvals data:", response.data);
       setApprovals(response.data || []); // Ensure it's always an array
     } catch (error: any) {
-      console.error("Error fetching approvals:", error);
       setApprovals([]); // Reset to empty array on error
       toast({
         title: "Error",
@@ -116,33 +113,10 @@ export default function ApprovalsPage() {
         </div>
       </div>
 
-      {/* Debug Info */}
-      <div className="bg-muted/50 rounded-lg border p-4 text-sm">
-        <p className="mb-2 font-medium">Debug Information:</p>
-        <p>
-          <strong>Your Role:</strong> {session?.user?.role}
-        </p>
-        <p>
-          <strong>Your ID:</strong> {session?.user?.id}
-        </p>
-        <p>
-          <strong>Approvals Assigned to You:</strong> {approvals.length}
-        </p>
-        <p className="text-muted-foreground mt-2 text-xs">
-          Note: You will only see expenses where YOU are assigned as the approver. If you're a
-          manager, employees must have you set as their manager. If you're an admin, check the
-          company's approval rules.
-        </p>
-      </div>
-
       {approvals.length === 0 && !loading && (
         <div className="rounded-lg border border-dashed p-8 text-center">
           <p className="text-muted-foreground">
             No pending approvals assigned to you at this time.
-            <br />
-            <span className="mt-2 block text-sm">
-              Pending expenses from employees who have you as their manager will appear here.
-            </span>
           </p>
         </div>
       )}

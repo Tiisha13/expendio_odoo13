@@ -40,12 +40,17 @@ type ApprovalActionRequest struct {
 
 // InitializeApprovals creates approval records based on company's approval rule
 func (s *ApprovalService) InitializeApprovals(ctx context.Context, expense *domain.Expense) error {
+	fmt.Printf("🔄 InitializeApprovals called for expense ID: %s, UserID: %s\n", expense.ID.Hex(), expense.UserID.Hex())
+
 	// Get company's approval rule
 	rule, err := s.approvalRuleRepo.FindByCompanyID(ctx, expense.CompanyID.Hex())
 	if err != nil {
+		fmt.Printf("⚠️  No approval rule found for company %s, using default approval\n", expense.CompanyID.Hex())
 		// If no rule exists, create a simple approval for user's manager
 		return s.createDefaultApproval(ctx, expense)
 	}
+
+	fmt.Printf("✅ Found approval rule type: %s\n", rule.Type)
 
 	switch rule.Type {
 	case domain.RuleTypeSequential:
@@ -63,16 +68,24 @@ func (s *ApprovalService) InitializeApprovals(ctx context.Context, expense *doma
 
 // createDefaultApproval creates a simple approval for user's manager
 func (s *ApprovalService) createDefaultApproval(ctx context.Context, expense *domain.Expense) error {
+	fmt.Printf("📝 Creating default approval for expense %s\n", expense.ID.Hex())
+
 	user, err := s.userRepo.FindByID(ctx, expense.UserID.Hex())
 	if err != nil {
+		fmt.Printf("❌ Failed to find user %s: %v\n", expense.UserID.Hex(), err)
 		return err
 	}
 
+	fmt.Printf("👤 User found: %s %s (Role: %s)\n", user.FirstName, user.LastName, user.Role)
+
 	if user.ManagerID == nil {
+		fmt.Printf("⚠️  User has no manager, auto-approving expense\n")
 		// If no manager, auto-approve (for admin users)
 		expense.Status = domain.StatusApproved
 		return s.expenseRepo.Update(ctx, expense)
 	}
+
+	fmt.Printf("👨‍💼 Manager ID found: %s\n", user.ManagerID.Hex())
 
 	approval := &domain.Approval{
 		ExpenseID:  expense.ID,
@@ -81,7 +94,15 @@ func (s *ApprovalService) createDefaultApproval(ctx context.Context, expense *do
 		Status:     domain.ApprovalPending,
 	}
 
-	return s.approvalRepo.Create(ctx, approval)
+	if err := s.approvalRepo.Create(ctx, approval); err != nil {
+		fmt.Printf("❌ Failed to create approval: %v\n", err)
+		return err
+	}
+
+	fmt.Printf("✅ Approval created successfully! Approval for expense %s assigned to approver %s\n",
+		expense.ID.Hex(), user.ManagerID.Hex())
+
+	return nil
 }
 
 // createSequentialApprovals creates sequential approval workflow
@@ -348,19 +369,57 @@ func (s *ApprovalService) checkAllApprovalsComplete(approvals []*domain.Approval
 
 // GetPendingApprovals retrieves pending approvals for an approver with caching
 func (s *ApprovalService) GetPendingApprovals(ctx context.Context, approverID string) ([]*domain.Approval, error) {
+	fmt.Printf("🔍 GetPendingApprovals called for approver ID: %s\n", approverID)
+
 	// Try cache first
 	cacheKey := fmt.Sprintf("approvals:pending:approver:%s", approverID)
 	var cachedApprovals []*domain.Approval
 	err := cache.Get(cacheKey, &cachedApprovals)
 	if err == nil {
+		fmt.Printf("📦 Found %d approvals in cache\n", len(cachedApprovals))
 		return cachedApprovals, nil
 	}
+
+	fmt.Printf("🔍 Cache miss, fetching from database...\n")
 
 	// Fetch from database
 	approvals, err := s.approvalRepo.FindPendingByApproverID(ctx, approverID)
 	if err != nil {
+		fmt.Printf("❌ Failed to fetch pending approvals: %v\n", err)
 		return nil, fmt.Errorf("failed to fetch pending approvals: %w", err)
 	}
+
+	fmt.Printf("✅ Found %d pending approvals in database\n", len(approvals))
+
+	// Cache the result
+	_ = cache.Set(cacheKey, approvals, s.cfg.Cache.PendingApprovalsTTL)
+
+	return approvals, nil
+}
+
+// GetPendingApprovalsWithDetails retrieves pending approvals with populated expense and user data
+func (s *ApprovalService) GetPendingApprovalsWithDetails(ctx context.Context, approverID string) ([]*domain.ApprovalWithDetails, error) {
+	fmt.Printf("🔍 GetPendingApprovalsWithDetails called for approver ID: %s\n", approverID)
+
+	// Try cache first
+	cacheKey := fmt.Sprintf("approvals:pending:details:approver:%s", approverID)
+	var cachedApprovals []*domain.ApprovalWithDetails
+	err := cache.Get(cacheKey, &cachedApprovals)
+	if err == nil {
+		fmt.Printf("📦 Found %d approvals with details in cache\n", len(cachedApprovals))
+		return cachedApprovals, nil
+	}
+
+	fmt.Printf("🔍 Cache miss, fetching from database with details...\n")
+
+	// Fetch from database with details
+	approvals, err := s.approvalRepo.FindPendingByApproverIDWithDetails(ctx, approverID)
+	if err != nil {
+		fmt.Printf("❌ Failed to fetch pending approvals with details: %v\n", err)
+		return nil, fmt.Errorf("failed to fetch pending approvals with details: %w", err)
+	}
+
+	fmt.Printf("✅ Found %d pending approvals with details in database\n", len(approvals))
 
 	// Cache the result
 	_ = cache.Set(cacheKey, approvals, s.cfg.Cache.PendingApprovalsTTL)

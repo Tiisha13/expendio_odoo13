@@ -28,6 +28,9 @@ func SetupRoutes(app *fiber.App, cfg *config.Config) {
 	approvalService := service.NewApprovalService(approvalRepo, approvalRuleRepo, expenseRepo, userRepo, cfg)
 	ocrService := ocr.NewOCRService(cfg)
 
+	// Set approval service in expense service (to avoid circular dependency)
+	expenseService.SetApprovalService(approvalService)
+
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService, cfg)
 	userHandler := handler.NewUserHandler(userService, cfg)

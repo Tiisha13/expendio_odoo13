@@ -106,6 +106,43 @@ type Approval struct {
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
+// ApprovalWithDetails extends Approval with populated expense and user data
+// Used for API responses where related data needs to be included
+type ApprovalWithDetails struct {
+	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	ExpenseID  primitive.ObjectID `json:"expense_id" bson:"expense_id"`
+	ApproverID primitive.ObjectID `json:"approver_id" bson:"approver_id"`
+	Level      int                `json:"level" bson:"level"`
+	Status     ApprovalStatus     `json:"status" bson:"status"`
+	Comments   string             `json:"comments,omitempty" bson:"comments,omitempty"`
+	ApprovedAt *time.Time         `json:"approved_at,omitempty" bson:"approved_at,omitempty"`
+	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
+	Expense    *ExpenseWithUser   `json:"expense,omitempty" bson:"expense,omitempty"`
+	Approver   *User              `json:"approver,omitempty" bson:"approver,omitempty"`
+}
+
+// ExpenseWithUser extends Expense with populated user data
+type ExpenseWithUser struct {
+	ID                   primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	UserID               primitive.ObjectID `json:"user_id" bson:"user_id"`
+	CompanyID            primitive.ObjectID `json:"company_id" bson:"company_id"`
+	Amount               float64            `json:"amount" bson:"amount"`
+	Currency             string             `json:"currency" bson:"currency"`
+	ConvertedAmount      float64            `json:"converted_amount" bson:"converted_amount"`
+	ExchangeRate         float64            `json:"exchange_rate" bson:"exchange_rate"`
+	Category             ExpenseCategory    `json:"category" bson:"category"`
+	Description          string             `json:"description" bson:"description"`
+	ExpenseDate          time.Time          `json:"expense_date" bson:"expense_date"`
+	ReceiptURL           string             `json:"receipt_url,omitempty" bson:"receipt_url,omitempty"`
+	Merchant             string             `json:"merchant,omitempty" bson:"merchant,omitempty"`
+	Status               ExpenseStatus      `json:"status" bson:"status"`
+	CurrentApprovalLevel int                `json:"current_approval_level" bson:"current_approval_level"`
+	CreatedAt            time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt            time.Time          `json:"updated_at" bson:"updated_at"`
+	User                 *User              `json:"user,omitempty" bson:"user,omitempty"`
+}
+
 // ApprovalRuleType defines types of approval rules
 type ApprovalRuleType string
 

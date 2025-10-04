@@ -41,6 +41,7 @@ type ApprovalRepository interface {
 	FindByID(ctx context.Context, id string) (*Approval, error)
 	FindByExpenseID(ctx context.Context, expenseID string) ([]*Approval, error)
 	FindPendingByApproverID(ctx context.Context, approverID string) ([]*Approval, error)
+	FindPendingByApproverIDWithDetails(ctx context.Context, approverID string) ([]*ApprovalWithDetails, error)
 	Update(ctx context.Context, approval *Approval) error
 	UpdateStatus(ctx context.Context, id string, status ApprovalStatus) error
 	CountApprovedByExpenseID(ctx context.Context, expenseID string) (int64, error)
