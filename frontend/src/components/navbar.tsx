@@ -1,6 +1,13 @@
 "use client";
 
-import { PieChart, User, type LucideIcon } from "lucide-react";
+import {
+  PieChart,
+  User,
+  CheckCircle,
+  LayoutDashboard,
+  type LucideIcon,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import {
   SidebarGroup,
@@ -10,12 +17,31 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
-const navlist: { name: string; url: string; icon: LucideIcon }[] = [
-  { name: "Users", url: "/users", icon: User },
-  { name: "Expenses", url: "/expenses", icon: PieChart },
-];
-
 export function NavBar({}: {}) {
+  const { data: session } = useSession();
+
+  if (!session) return null;
+
+  const user = session.user;
+
+  // Build navigation based on role
+  const navlist: { name: string; url: string; icon: LucideIcon }[] = [
+    { name: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  ];
+
+  // Admins and managers can see Users page
+  if (user.role === "admin" || user.role === "manager") {
+    navlist.push({ name: "Users", url: "/users", icon: User });
+  }
+
+  // Everyone can see Expenses
+  navlist.push({ name: "Expenses", url: "/expenses", icon: PieChart });
+
+  // Managers and admins can see Approvals
+  if (user.role === "admin" || user.role === "manager") {
+    navlist.push({ name: "Approvals", url: "/approvals", icon: CheckCircle });
+  }
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarMenu>

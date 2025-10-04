@@ -20,6 +20,7 @@ declare module "next-auth" {
 
   interface Session extends DefaultSession {
     user: User;
+    accessToken: string; // Added for API calls
   }
 }
 

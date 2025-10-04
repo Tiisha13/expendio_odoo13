@@ -94,6 +94,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         access_token: token.access_token,
         refresh_token: token.refresh_token,
       };
+      session.accessToken = token.access_token; // Add for easy access
       return session;
     },
   },
