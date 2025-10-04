@@ -102,6 +102,9 @@ func (s *ApprovalService) createDefaultApproval(ctx context.Context, expense *do
 	fmt.Printf("✅ Approval created successfully! Approval for expense %s assigned to approver %s\n",
 		expense.ID.Hex(), user.ManagerID.Hex())
 
+	// Invalidate approval caches for the approver
+	s.invalidateApprovalCaches(expense.CompanyID.Hex(), user.ManagerID.Hex())
+
 	return nil
 }
 
@@ -281,6 +284,120 @@ func (s *ApprovalService) RejectExpense(ctx context.Context, expenseID, approver
 	return nil
 }
 
+// ApproveExpenseByApprovalID approves an expense using the approval ID
+func (s *ApprovalService) ApproveExpenseByApprovalID(ctx context.Context, approvalID, approverID string, req *ApprovalActionRequest) error {
+	// Get the approval record
+	approval, err := s.approvalRepo.FindByID(ctx, approvalID)
+	if err != nil {
+		return fmt.Errorf("approval not found")
+	}
+
+	// Verify that the approver is the one assigned to this approval
+	if approval.ApproverID.Hex() != approverID {
+		return fmt.Errorf("you are not authorized to approve this expense")
+	}
+
+	// Check if already processed
+	if approval.Status != domain.ApprovalPending {
+		return fmt.Errorf("approval is already %s", approval.Status)
+	}
+
+	// Get the expense
+	expenseID := approval.ExpenseID.Hex()
+	expense, err := s.expenseRepo.FindByID(ctx, expenseID)
+	if err != nil {
+		return fmt.Errorf("expense not found")
+	}
+
+	if expense.Status != domain.StatusPending {
+		return fmt.Errorf("expense is already %s", expense.Status)
+	}
+
+	// Update approval status
+	approval.Status = domain.ApprovalApproved
+	approval.Comments = req.Comments
+	if err := s.approvalRepo.Update(ctx, approval); err != nil {
+		return fmt.Errorf("failed to update approval: %w", err)
+	}
+
+	// Get all approvals for this expense to check if we should auto-approve
+	approvals, err := s.approvalRepo.FindByExpenseID(ctx, expenseID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch approvals: %w", err)
+	}
+
+	// Check if expense should be auto-approved based on rules
+	shouldAutoApprove, err := s.checkAutoApproval(ctx, expense, approvals)
+	if err != nil {
+		return fmt.Errorf("failed to check auto-approval: %w", err)
+	}
+
+	if shouldAutoApprove {
+		expense.Status = domain.StatusApproved
+		if err := s.expenseRepo.UpdateStatus(ctx, expenseID, domain.StatusApproved); err != nil {
+			return fmt.Errorf("failed to approve expense: %w", err)
+		}
+	} else {
+		// Increment approval level
+		expense.CurrentApprovalLevel++
+		if err := s.expenseRepo.Update(ctx, expense); err != nil {
+			return fmt.Errorf("failed to update expense: %w", err)
+		}
+	}
+
+	// Invalidate caches
+	s.invalidateApprovalCaches(expense.CompanyID.Hex(), approverID)
+
+	return nil
+}
+
+// RejectExpenseByApprovalID rejects an expense using the approval ID
+func (s *ApprovalService) RejectExpenseByApprovalID(ctx context.Context, approvalID, approverID string, req *ApprovalActionRequest) error {
+	// Get the approval record
+	approval, err := s.approvalRepo.FindByID(ctx, approvalID)
+	if err != nil {
+		return fmt.Errorf("approval not found")
+	}
+
+	// Verify that the approver is the one assigned to this approval
+	if approval.ApproverID.Hex() != approverID {
+		return fmt.Errorf("you are not authorized to reject this expense")
+	}
+
+	// Check if already processed
+	if approval.Status != domain.ApprovalPending {
+		return fmt.Errorf("approval is already %s", approval.Status)
+	}
+
+	// Get the expense
+	expenseID := approval.ExpenseID.Hex()
+	expense, err := s.expenseRepo.FindByID(ctx, expenseID)
+	if err != nil {
+		return fmt.Errorf("expense not found")
+	}
+
+	if expense.Status != domain.StatusPending {
+		return fmt.Errorf("expense is already %s", expense.Status)
+	}
+
+	// Update approval status
+	approval.Status = domain.ApprovalRejected
+	approval.Comments = req.Comments
+	if err := s.approvalRepo.Update(ctx, approval); err != nil {
+		return fmt.Errorf("failed to update approval: %w", err)
+	}
+
+	// Reject the expense (one rejection rejects all)
+	if err := s.expenseRepo.UpdateStatus(ctx, expenseID, domain.StatusRejected); err != nil {
+		return fmt.Errorf("failed to reject expense: %w", err)
+	}
+
+	// Invalidate caches
+	s.invalidateApprovalCaches(expense.CompanyID.Hex(), approverID)
+
+	return nil
+}
+
 // checkAutoApproval checks if expense should be auto-approved based on rules
 func (s *ApprovalService) checkAutoApproval(ctx context.Context, expense *domain.Expense, approvals []*domain.Approval) (bool, error) {
 	// Get approval rule
@@ -438,9 +555,15 @@ func (s *ApprovalService) GetApprovalHistory(ctx context.Context, expenseID stri
 
 // invalidateApprovalCaches invalidates approval-related caches
 func (s *ApprovalService) invalidateApprovalCaches(companyID, approverID string) {
-	// Invalidate pending approvals cache
+	// Invalidate pending approvals cache (old format)
 	pendingKey := fmt.Sprintf("approvals:pending:approver:%s", approverID)
 	_ = cache.Delete(pendingKey)
+
+	// Invalidate pending approvals cache (new format with details)
+	pendingDetailsKey := fmt.Sprintf("approvals:pending:details:approver:%s", approverID)
+	_ = cache.Delete(pendingDetailsKey)
+
+	fmt.Printf("🗑️  Invalidated approval caches for approver: %s\n", approverID)
 
 	// Invalidate pending expenses cache
 	expensesKey := fmt.Sprintf("expenses:pending:company:%s", companyID)

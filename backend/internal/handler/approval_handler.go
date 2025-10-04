@@ -35,14 +35,14 @@ func (h *ApprovalHandler) GetPendingApprovals(c *fiber.Ctx) error {
 	return response.OK(c, "Pending approvals retrieved successfully", approvals)
 }
 
-// ApproveExpense approves an expense
+// ApproveExpense approves an expense via approval ID
 // @route POST /api/v1/approvals/:id/approve
 func (h *ApprovalHandler) ApproveExpense(c *fiber.Ctx) error {
-	expenseID := c.Params("id")
+	approvalID := c.Params("id")
 	approverID := c.Locals("userID").(string)
 
-	if err := validator.ValidateObjectID(expenseID); err != nil {
-		return response.BadRequest(c, "Invalid expense ID")
+	if err := validator.ValidateObjectID(approvalID); err != nil {
+		return response.BadRequest(c, "Invalid approval ID")
 	}
 
 	var req service.ApprovalActionRequest
@@ -51,21 +51,21 @@ func (h *ApprovalHandler) ApproveExpense(c *fiber.Ctx) error {
 		req.Comments = ""
 	}
 
-	if err := h.approvalService.ApproveExpense(c.Context(), expenseID, approverID, &req); err != nil {
+	if err := h.approvalService.ApproveExpenseByApprovalID(c.Context(), approvalID, approverID, &req); err != nil {
 		return response.BadRequest(c, err.Error())
 	}
 
 	return response.OK(c, "Expense approved successfully", nil)
 }
 
-// RejectExpense rejects an expense
+// RejectExpense rejects an expense via approval ID
 // @route POST /api/v1/approvals/:id/reject
 func (h *ApprovalHandler) RejectExpense(c *fiber.Ctx) error {
-	expenseID := c.Params("id")
+	approvalID := c.Params("id")
 	approverID := c.Locals("userID").(string)
 
-	if err := validator.ValidateObjectID(expenseID); err != nil {
-		return response.BadRequest(c, "Invalid expense ID")
+	if err := validator.ValidateObjectID(approvalID); err != nil {
+		return response.BadRequest(c, "Invalid approval ID")
 	}
 
 	var req service.ApprovalActionRequest
@@ -74,7 +74,7 @@ func (h *ApprovalHandler) RejectExpense(c *fiber.Ctx) error {
 		req.Comments = ""
 	}
 
-	if err := h.approvalService.RejectExpense(c.Context(), expenseID, approverID, &req); err != nil {
+	if err := h.approvalService.RejectExpenseByApprovalID(c.Context(), approvalID, approverID, &req); err != nil {
 		return response.BadRequest(c, err.Error())
 	}
 
