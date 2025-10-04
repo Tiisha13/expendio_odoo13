@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: expensio-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: expensio
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - expensio-network
+
+  # Redis
+  redis:
+    image: redis:7.2-alpine
+    container_name: expensio-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - expensio-network
+
+  # Expensio Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expensio-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - APP_ENV=production
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE=expensio
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./uploads:/root/uploads
+      - ./logs:/root/logs
+    networks:
+      - expensio-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  expensio-network:
+    driver: bridge
