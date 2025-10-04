@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { expenseAPI } from "@/lib/api";
 import { Receipt, DollarSign, CheckCircle, Clock } from "lucide-react";
+import Link from "next/link";
 
 export default async function Page() {
   const session = await auth();
@@ -33,14 +34,14 @@ export default async function Page() {
   }
 
   const user = session.user;
-  const company = user.company;
+  const company = user?.company;
 
   return (
     <div className="space-y-6 p-4">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user.first_name}!</h1>
         <p className="text-muted-foreground">
-          {company.name} • {user.role}
+          {company?.name || "Your Company"} • {user.role}
         </p>
       </div>
 
@@ -98,34 +99,34 @@ export default async function Page() {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           {user.role !== "employee" && (
-            <a
+            <Link
               href="/users"
               className="hover:bg-accent flex flex-col items-center justify-center rounded-lg border p-6 transition-colors"
             >
               <div className="text-2xl font-semibold">👥</div>
               <div className="mt-2 font-medium">Manage Users</div>
               <div className="text-muted-foreground text-sm">View and manage team</div>
-            </a>
+            </Link>
           )}
 
-          <a
+          <Link
             href="/expenses"
             className="hover:bg-accent flex flex-col items-center justify-center rounded-lg border p-6 transition-colors"
           >
             <div className="text-2xl font-semibold">💰</div>
             <div className="mt-2 font-medium">My Expenses</div>
             <div className="text-muted-foreground text-sm">View and create expenses</div>
-          </a>
+          </Link>
 
           {(user.role === "manager" || user.role === "admin") && (
-            <a
+            <Link
               href="/approvals"
               className="hover:bg-accent flex flex-col items-center justify-between rounded-lg border p-6 transition-colors"
             >
               <div className="text-2xl font-semibold">✅</div>
               <div className="mt-2 font-medium">Approvals</div>
               <div className="text-muted-foreground text-sm">Review pending expenses</div>
-            </a>
+            </Link>
           )}
         </CardContent>
       </Card>

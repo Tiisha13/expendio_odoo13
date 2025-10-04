@@ -15,18 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle } from "lucide-react";
-import { format } from "date-fns";
+import { DataTable } from "@/components/ui/data-table";
+import { createApprovalColumns } from "@/components/approvals-columns";
 
 export default function ApprovalsPage() {
   const { data: session } = useSession();
@@ -45,8 +36,11 @@ export default function ApprovalsPage() {
       setLoading(true);
       const api = createClientApprovalAPI(session.accessToken, session.user?.refresh_token);
       const response = await api.pending();
+      console.log("Approvals response:", response);
+      console.log("Approvals data:", response.data);
       setApprovals(response.data || []); // Ensure it's always an array
     } catch (error: any) {
+      console.error("Error fetching approvals:", error);
       setApprovals([]); // Reset to empty array on error
       toast({
         title: "Error",
@@ -116,68 +110,30 @@ export default function ApprovalsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Pending Approvals</h1>
-          <p className="text-muted-foreground">Review and approve expense requests</p>
+          <p className="text-muted-foreground">
+            Review and approve expense requests ({approvals.length} pending)
+          </p>
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Employee</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {!approvals || approvals.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-muted-foreground text-center">
-                  No pending approvals
-                </TableCell>
-              </TableRow>
-            ) : (
-              approvals.map((approval) => (
-                <TableRow key={approval.id}>
-                  <TableCell className="font-medium">
-                    {approval.expense?.user?.first_name} {approval.expense?.user?.last_name}
-                  </TableCell>
-                  <TableCell>
-                    {approval.expense?.expense_date &&
-                      format(new Date(approval.expense.expense_date), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell className="capitalize">{approval.expense?.category}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {approval.expense?.description}
-                  </TableCell>
-                  <TableCell>
-                    {approval.expense?.amount.toFixed(2)} {approval.expense?.currency}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{approval.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleApprove(approval)}>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Approve
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleReject(approval)}>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Reject
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {approvals.length === 0 && !loading && (
+        <div className="rounded-lg border border-dashed p-8 text-center">
+          <p className="text-muted-foreground">
+            No pending approvals at this time.
+            <br />
+            <span className="text-sm">
+              Pending expenses from employees will appear here for approval.
+            </span>
+          </p>
+        </div>
+      )}
+
+      <DataTable
+        columns={createApprovalColumns(handleApprove, handleReject)}
+        data={approvals}
+        searchKey="description"
+        searchPlaceholder="Search approvals..."
+      />
 
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
         <DialogContent>

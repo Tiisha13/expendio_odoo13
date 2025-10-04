@@ -24,21 +24,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Upload, Trash2, CalendarIcon } from "lucide-react";
+import { Plus, Upload, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { DataTable } from "@/components/ui/data-table";
+import { createExpenseColumns } from "@/components/expenses-columns";
 
 export default function ExpensesClient() {
   const { data: session } = useSession();
@@ -48,6 +41,8 @@ export default function ExpensesClient() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [ocrDialogOpen, setOcrDialogOpen] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateExpenseInput>({
     amount: 0,
@@ -125,7 +120,6 @@ export default function ExpensesClient() {
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (!session?.accessToken) return;
-    if (!confirm("Are you sure you want to delete this expense?")) return;
 
     try {
       const api = createClientExpenseAPI(session.accessToken, session.user?.refresh_token);
@@ -136,6 +130,8 @@ export default function ExpensesClient() {
         description: "Expense deleted successfully",
       });
 
+      setDeleteDialogOpen(false);
+      setExpenseToDelete(null);
       fetchExpenses();
     } catch (error: any) {
       toast({
@@ -143,6 +139,17 @@ export default function ExpensesClient() {
         description: error.message || "Failed to delete expense",
         variant: "destructive",
       });
+    }
+  };
+
+  const openDeleteDialog = (expenseId: string) => {
+    setExpenseToDelete(expenseId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (expenseToDelete) {
+      handleDeleteExpense(expenseToDelete);
     }
   };
 
@@ -171,15 +178,6 @@ export default function ExpensesClient() {
     } finally {
       setOcrLoading(false);
     }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      pending: "secondary",
-      approved: "default",
-      rejected: "destructive",
-    };
-    return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
   };
 
   if (loading) {
@@ -386,52 +384,38 @@ export default function ExpensesClient() {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenses.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground text-center">
-                  No expenses found. Create your first expense!
-                </TableCell>
-              </TableRow>
-            ) : (
-              expenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell>{format(new Date(expense.expense_date), "MMM d, yyyy")}</TableCell>
-                  <TableCell className="capitalize">{expense.category}</TableCell>
-                  <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
-                  <TableCell>
-                    {expense.amount.toFixed(2)} {expense.currency}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(expense.status)}</TableCell>
-                  <TableCell className="text-right">
-                    {expense.status === "pending" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteExpense(expense.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        columns={createExpenseColumns(openDeleteDialog)}
+        data={expenses}
+        searchKey="description"
+        searchPlaceholder="Search expenses..."
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Expense</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this expense? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setExpenseToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

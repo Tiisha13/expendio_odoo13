@@ -39,7 +39,7 @@ async function refreshToken(refreshToken: string): Promise<string | null> {
 async function getAuthHeader() {
   const session = await auth();
   if (!session?.user?.access_token) {
-    throw new Error("Not authenticated");
+    return null; // Return null instead of throwing
   }
   return {
     Authorization: `Bearer ${session.user.access_token}`,
@@ -56,12 +56,15 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
 
   // Add auth header if not a public endpoint
   if (!endpoint.includes("/auth/")) {
-    try {
-      const authHeader = await getAuthHeader();
+    const authHeader = await getAuthHeader();
+    if (authHeader) {
       Object.assign(headers, authHeader);
-    } catch (error) {
-      // For server-side calls without session
-      console.error("Auth error:", error);
+    } else {
+      // No valid session, redirect to login
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      throw new Error("Not authenticated");
     }
   }
 
